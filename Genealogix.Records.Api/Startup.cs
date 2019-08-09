@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Genealogix.Records.Api.Db;
 using Genealogix.Records.Api.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Genealogix.Records.Api
@@ -31,6 +26,10 @@ namespace Genealogix.Records.Api
 
             services.AddSingleton<IRecordsDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<RecordsDatabaseSettings>>().Value);
+
+            services.AddSingleton<IRecordsDatabaseClientFactory, MongoDbClientRecordsDatabaseFactory>();
+
+            services.AddSingleton<IRecordService, RecordService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

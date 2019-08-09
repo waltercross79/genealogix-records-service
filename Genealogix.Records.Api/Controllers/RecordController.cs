@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Genealogix.Records.Api.Models;
 using Genealogix.Records.Api.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Genealogix.Records.Api.Controllers
