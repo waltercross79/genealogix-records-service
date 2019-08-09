@@ -10,11 +10,11 @@ namespace Genealogix.Records.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ImagesController : ControllerBase
+    public class ImageController : ControllerBase
     {        
         readonly IImageService _imageService;
 
-        public ImagesController(IImageService imageService)
+        public ImageController(IImageService imageService)
         {
             _imageService = imageService;    
         }
@@ -38,10 +38,16 @@ namespace Genealogix.Records.Api.Controllers
         /// Saves image in the image store and generates unique identifier.
         /// </summary>
         /// <param name="image">Binary representation of the image.</param>
+        /// <param name="fileName">Original file name.</param>
         [HttpPost]
-        public ActionResult<string> Post([FromForm] byte[] image)
+        public async Task<ActionResult<string>> Post([FromForm] string imageBase64, [FromForm] string fileName)
         {
-            throw new NotImplementedException();
+            // images should be base64 encoded...
+            byte[] image = System.Convert.FromBase64String(imageBase64);
+
+            var key = await _imageService.SaveImage(fileName, image);
+
+            return key;
         }
 
         // DELETE api/images/5

@@ -1,4 +1,5 @@
-﻿using Genealogix.Records.Api.Db;
+﻿using Amazon.S3;
+using Genealogix.Records.Api.Db;
 using Genealogix.Records.Api.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,16 +22,20 @@ namespace Genealogix.Records.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // MongoDB setup.
             services.Configure<RecordsDatabaseSettings>(
-                Configuration.GetSection(nameof(RecordsDatabaseSettings)));
-
+                Configuration.GetSection(nameof(RecordsDatabaseSettings)));            
             services.AddSingleton<IRecordsDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<RecordsDatabaseSettings>>().Value);
-
             services.AddSingleton<IRecordsDatabaseClientFactory, MongoDbClientRecordsDatabaseFactory>();
-
             services.AddSingleton<IRecordService, RecordService>();
 
+            // Amazon S3 setup.
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
+            services.AddAWSService<IAmazonS3>();
+            services.AddSingleton<IImageService, S3ImageService>();
+
+            // MVC setup.
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
