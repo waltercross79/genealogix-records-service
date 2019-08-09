@@ -1,5 +1,8 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Genealogix.Records.Api.Models 
 {
@@ -11,16 +14,25 @@ namespace Genealogix.Records.Api.Models
             this.ImageIdentifiers = new List<string>();
         }
 
-        public int ID { get; set; }
+        /// <summary>
+        /// Unique identifier of the record.
+        /// </summary>
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string ID { get; set; }
 
         /// <summary>
         /// Date when the record was made in the registry.
         /// </summary>
-        public DateTime RecordDate { get; set; } 
+        [BsonRequired]
+        [Required]
+        public DateTime RecordDate { get; set; }
 
         /// <summary>
         /// Type of record - birth|death|marriage.
         /// </summary>
+        [BsonRequired]
+        [Required]
         public RecordType RecordType { get; set; }
 
         /// <summary>
@@ -56,11 +68,19 @@ namespace Genealogix.Records.Api.Models
         /// <summary>
         /// Collection of persons identified in the record.
         /// </summary>
-        public IEnumerable<PersonInRecord> Persons { get; set; }
+        public IList<PersonInRecord> Persons { get; set; }
 
         /// <summary>
         /// Collection of unique identifiers of all images associated with the record.
         /// </summary>
         public IEnumerable<string> ImageIdentifiers { get; set; }
+
+        internal void AddPerson(PersonInRecord pir)
+        {
+            // Validation logic should come here.
+            // Throw exception when invalid attempt - like adding two mothers to a record.
+
+            this.Persons.Add(pir);
+        }
     }
 }

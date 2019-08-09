@@ -1,4 +1,6 @@
+using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Genealogix.Records.Api.Models 
 {
@@ -8,12 +10,16 @@ namespace Genealogix.Records.Api.Models
         /// First name of the person listed in the record.
         /// </summary>
         /// <value></value>
+        [BsonRequired]
+        [Required]
         public string FirstName { get; set; }
 
         /// <summary>
         /// Last name of the person listed in the record.
         /// </summary>
         /// <value></value>
+        [BsonRequired]
+        [Required]
         public string LastName { get; set; }
 
         /// <summary>
@@ -26,12 +32,14 @@ namespace Genealogix.Records.Api.Models
         /// Role of the person in the recorded event - mother|father|bride|groom...
         /// </summary>
         /// <value></value>
+        [BsonRequired]
+        [Required]
         public PersonRole Role { get; set; }
 
         /// <summary>
         /// Date of birth of the person in record, if known.
         /// </summary>
         /// <value></value>
-        public DateTime? DOB { get; set; }
+        public DateTime? DOB { get; set; }        
     }
 }

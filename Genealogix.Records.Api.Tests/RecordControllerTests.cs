@@ -17,9 +17,10 @@ namespace Genealogix.Records.Api.Tests
         private Mock<IRecordService> _recordService;
 
         private IEnumerable<Record> _records;
-        private const int RECORD_ID = 1;
-        private const int RECORD_ID_MISSING = 99;
-        private const int INVALID_RECORD_ID = -1;
+        private const string RECORD_ID = "ABCD";
+        private const string RECORD_ID_MISSING_FROM_DB = "XYZ";
+        private const string INVALID_RECORD_ID = "";
+        private const string NEW_ID = "KLMN";
 
         [TestInitialize]
         public void Init() {
@@ -42,12 +43,27 @@ namespace Genealogix.Records.Api.Tests
             _recordService
                 .Setup(x => x.Search(It.IsAny<SearchFilters>()))
                 .Returns(_records);
+
+            _recordService
+                .Setup(x => x.Create(It.IsAny<Record>()))
+                .Returns<Record>(r =>
+                {
+                    r.ID = NEW_ID;
+                    return r;
+                });
+
+            _recordService
+                .Setup(x => x.GetById(It.IsAny<string>()))
+                .Returns((string id) => _records.Where(r => r.ID == id).SingleOrDefault());
+
+            _recordService
+                .Setup(x => x.Update(It.IsAny<string>(), It.IsAny<Record>()));
         }
 
         private IEnumerable<Record> GetTestRecords() {
             return new List<Record>{
                 new Record{ ID = RECORD_ID },
-                new Record{ ID = 2 }
+                new Record{ ID = "EFGH" }
             };
         }
 
@@ -77,21 +93,129 @@ namespace Genealogix.Records.Api.Tests
         }
 
         [TestMethod]
+        public void test_Get_ReturnsFoundRecord()
+        {
+            var result = _controller.Get(RECORD_ID);
+
+            Assert.AreEqual(result.Value, _records.FirstOrDefault(r => r.ID == RECORD_ID));
+        }
+
+        [TestMethod]
         public void test_Get_Returns404ForNonPositiveId() {
             var result = _controller.Get(INVALID_RECORD_ID);
 
-            _recordService.Verify(x => x.GetById(It.IsAny<int>()), Times.Never());
+            _recordService.Verify(x => x.GetById(It.IsAny<string>()), Times.Never());
 
             Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
         }
 
         [TestMethod]
         public void test_Get_Returns404WhenNothingFound() {
-            var result = _controller.Get(RECORD_ID_MISSING);
+            var result = _controller.Get(RECORD_ID_MISSING_FROM_DB);
 
-            _recordService.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+            _recordService.Verify(x => x.GetById(It.IsAny<string>()), Times.Once());
 
             Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void test_Create_CallsRecordServiceCreate()
+        {
+            Record r = new Record { RecordType = RecordType.Birth, RecordDate = new System.DateTime(2000, 1, 1) };
+
+            _controller.Create(r);
+
+            _recordService.Verify(x => x.Create(r));
+        }
+
+        [TestMethod]
+        public void test_Create_ReturnsInsertedRecordWithUpdatedID()
+        {
+            Record r = new Record { RecordType = RecordType.Birth, RecordDate = new System.DateTime(2000, 1, 1) };
+
+            var result = _controller.Create(r);
+
+            Assert.AreEqual(NEW_ID, result.Value.ID);
+            Assert.AreEqual(r.RecordDate, result.Value.RecordDate);
+            Assert.AreEqual(r.RecordType, result.Value.RecordType);
+        }
+
+        [TestMethod]
+        public void test_Update_CallsRecordServiceUpdate()
+        {
+            Record r = new Record { ID = RECORD_ID, RecordType = RecordType.Birth, RecordDate = new System.DateTime(2000, 1, 1) };
+
+            _controller.Update(RECORD_ID, r);
+
+            _recordService.Verify(x => x.Update(RECORD_ID, r));
+        }
+
+        [TestMethod]
+        public void test_Update_ReturnsUpdatedRecord()
+        {
+            Record r = new Record { ID = RECORD_ID, RecordType = RecordType.Birth, RecordDate = new System.DateTime(2000, 1, 1) };
+
+            var result = _controller.Update(RECORD_ID, r);
+
+            Assert.AreEqual(RECORD_ID, result.Value.ID);
+            Assert.AreEqual(r.RecordDate, result.Value.RecordDate);
+            Assert.AreEqual(r.RecordType, result.Value.RecordType);
+        }
+
+        [TestMethod]
+        public void test_Update_Returns404WhenRecordNotFound()
+        {
+            Record r = new Record { ID = RECORD_ID_MISSING_FROM_DB, RecordType = RecordType.Birth, RecordDate = new System.DateTime(2000, 1, 1) };
+
+            var result = _controller.Update(RECORD_ID_MISSING_FROM_DB, r);
+
+            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void test_Delete_CallsRecordServiceRemove()
+        {
+            _controller.Delete(RECORD_ID);
+
+            _recordService.Verify(x => x.Remove(RECORD_ID));
+        }
+
+        [TestMethod]
+        public void test_Delete_Returns404WhenRecordNotFound()
+        {
+            var result = _controller.Delete(RECORD_ID_MISSING_FROM_DB);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void test_Delete_Returns204WhenSuccess()
+        {
+            var result = _controller.Delete(RECORD_ID);
+
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
+        }
+
+        [TestMethod]
+        public void test_AddPerson_CallsRecordServiceToFindAndUpdateRecord()
+        {
+            PersonInRecord personToAdd = new PersonInRecord();
+            _controller.AddPerson(RECORD_ID, personToAdd);
+
+            _recordService.Verify(x => x.GetById(RECORD_ID));
+            _recordService.Verify(x => x.Update(RECORD_ID, It.Is<Record>(r =>
+                r.Persons.Count() == 1 &&
+                r.Persons.Single().Equals(personToAdd)
+                )));
+        }
+
+        [TestMethod]
+        public void test_AddPerson_ReturnsNoContent()
+        {
+            PersonInRecord personToAdd = new PersonInRecord();
+            var result = _controller.AddPerson(RECORD_ID, personToAdd);
+
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
         }
     }
 }

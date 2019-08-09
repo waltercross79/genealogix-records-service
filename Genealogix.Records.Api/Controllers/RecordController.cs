@@ -26,10 +26,10 @@ namespace Genealogix.Records.Api.Controllers
         /// </summary>
         /// <param name="id">Unique identifier of the record to get.</param>
         /// <returns>Single record with matching unique identifier.</returns>
-        [HttpGet("{id}")]
-        public ActionResult<Record> Get(int id)
+        [HttpGet("{id:length(24)}")]
+        public ActionResult<Record> Get(string id)
         {
-            if(id <= 0)
+            if(String.IsNullOrWhiteSpace(id))
                 return NotFound();
 
             Record result = _recordService.GetById(id);
@@ -58,13 +58,15 @@ namespace Genealogix.Records.Api.Controllers
         // POST api/record
 
         /// <summary>
-        /// Creates new record and stored it in the data storage.
+        /// Creates new record and stores it in the data storage.
         /// </summary>
         /// <param name="record">Details of a new record to store.</param>
         /// <returns>Created record with unique identifier.</returns>
         [HttpPost]
         public ActionResult<Record> Create([FromBody] Record record) {
-            throw new NotImplementedException();
+            var result = _recordService.Create(record);
+
+            return result;
         }
 
         // PUT api/record
@@ -74,9 +76,17 @@ namespace Genealogix.Records.Api.Controllers
         /// </summary>
         /// <param name="record">Existing record with updated properties.</param>
         /// <returns>Updated record after it was stored in the data store.</returns>
-        [HttpPut]
-        public ActionResult<Record> Update([FromBody] Record record) {
-            throw new NotImplementedException();
+        [HttpPut("{id:length(24)}")]
+        public ActionResult<Record> Update(string id, [FromBody] Record record) {
+
+            var r = _recordService.GetById(id);
+
+            if (r == null)
+                return NotFound();
+
+            _recordService.Update(id, record);
+
+            return record;
         }
 
         // DELETE api/record/5
@@ -86,10 +96,17 @@ namespace Genealogix.Records.Api.Controllers
         /// </summary>
         /// <param name="id">Unique identifier of the record.</param>
         /// <returns>204 response code when successful.</returns>
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        [HttpDelete("{id:length(24)}")]
+        public IActionResult Delete(string id)
         {
-            throw new NotImplementedException();
+            var r = _recordService.GetById(id);
+
+            if (r == null)
+                return NotFound();
+
+            _recordService.Remove(r.ID);
+
+            return NoContent();
         }
 
         /// <summary>
@@ -98,10 +115,16 @@ namespace Genealogix.Records.Api.Controllers
         /// <param name="id">Unique identifier of the record.</param>
         /// <param name="personInRecord">Details of the person to add to the record.</param>
         /// <returns>Service action result and optional message.</returns>
-        [HttpPost("{id}/AddPerson")]
-        public IActionResult AddPerson(int id, [FromBody] PersonInRecord personInRecord) 
+        [HttpPost("{id:length(24)}/AddPerson")]
+        public IActionResult AddPerson(string id, [FromBody] PersonInRecord personInRecord) 
         {
-            throw new NotImplementedException();
+            var r = _recordService.GetById(id);
+
+            r.AddPerson(personInRecord);
+
+            _recordService.Update(r.ID, r);
+
+            return NoContent();
         }
     }
 }
