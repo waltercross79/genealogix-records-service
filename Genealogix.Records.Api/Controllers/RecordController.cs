@@ -49,9 +49,12 @@ namespace Genealogix.Records.Api.Controllers
         [HttpGet]
         public ActionResult<List<Record>> Get([FromQuery] SearchFilters filters) 
         {
-            var result = _recordService.Search(filters);
+            List<Record> result = new List<Record>();
 
-            return result.ToList();
+            if(filters.IncludeBirths || filters.IncludeDeaths || filters.IncludeMarriages)
+                result = _recordService.Search(filters).ToList();
+
+            return result;
         }
 
         // POST api/record
@@ -118,6 +121,9 @@ namespace Genealogix.Records.Api.Controllers
         public IActionResult AddPerson(string id, [FromBody] PersonInRecord personInRecord) 
         {
             var r = _recordService.GetById(id);
+
+            if (r == null)
+                return NotFound();
 
             r.AddPerson(personInRecord);
 

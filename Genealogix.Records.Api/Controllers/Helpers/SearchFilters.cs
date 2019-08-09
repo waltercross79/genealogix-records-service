@@ -5,6 +5,14 @@ namespace Genealogix.Records.Api.Controllers
     public sealed class SearchFilters 
     {
         /// <summary>
+        /// Default constructor - all record types are implicitly included in the search.
+        /// </summary>
+        public SearchFilters()
+        {
+            IncludeMarriages = IncludeDeaths = IncludeBirths = true;
+        }
+
+        /// <summary>
         /// The earliest date on or after which records will be included.
         /// Ignore if null.
         /// </summary>

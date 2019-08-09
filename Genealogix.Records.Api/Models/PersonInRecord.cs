@@ -40,6 +40,7 @@ namespace Genealogix.Records.Api.Models
         /// Date of birth of the person in record, if known.
         /// </summary>
         /// <value></value>
+        [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Unspecified)]
         public DateTime? DOB { get; set; }        
     }
 }

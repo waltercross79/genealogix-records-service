@@ -86,6 +86,16 @@ namespace Genealogix.Records.Api.Tests
         }
 
         [TestMethod]
+        public void test_GetMany_ReturnsEmptyListIfNoRecordTypeSpecified()
+        {
+            var result = _controller.Get(new SearchFilters { IncludeBirths = false, IncludeDeaths = false, IncludeMarriages = false });
+
+            // Verify that the process is short-circuited.
+            _recordService.Verify(x => x.Search(It.IsAny<SearchFilters>()), Times.Never());
+            Assert.AreEqual(0, result.Value.Count());
+        }
+
+        [TestMethod]
         public void test_Get_CallsRecordServiceGetById() {
             _controller.Get(RECORD_ID);
 
@@ -216,6 +226,15 @@ namespace Genealogix.Records.Api.Tests
             var result = _controller.AddPerson(RECORD_ID, personToAdd);
 
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
+        }
+
+        [TestMethod]
+        public void test_AddPerson_ReturnsNotFoundIfNoMatchingRecord()
+        {
+            PersonInRecord personToAdd = new PersonInRecord();
+            var result = _controller.AddPerson(RECORD_ID_MISSING_FROM_DB, personToAdd);
+
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
 }
