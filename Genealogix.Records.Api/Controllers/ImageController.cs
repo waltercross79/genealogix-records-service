@@ -42,12 +42,9 @@ namespace Genealogix.Records.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> Post([FromForm] string imageBase64, [FromForm] string fileName)
         {
-            // images should be base64 encoded...
             byte[] image = System.Convert.FromBase64String(imageBase64);
 
-            var key = await _imageService.SaveImage(fileName, image);
-
-            return key;
+            return await _imageService.SaveImage(fileName, image);
         }
 
         // DELETE api/images/5

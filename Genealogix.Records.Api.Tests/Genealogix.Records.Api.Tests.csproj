@@ -19,4 +19,9 @@
     <ProjectReference Include="..\Genealogix.Records.Api\Genealogix.Records.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="test-image.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
