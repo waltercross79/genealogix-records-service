@@ -41,18 +41,20 @@ namespace Genealogix.Records.Api.Services
                 return null;
                         
             // Generate thumbnail and store under key_thum key.
-            var thumbnail = _imageResizer.GetThumbnail(new ImageInfo(image, fileName), THUMBNAIL_SIZE);
+            // TODO - too many errors in the underlying library... Need more research.
 
-            string thumbnailKey = key + THUMBNAIL_SUFFIX;
-            status = await SaveImageToS3Bucket(thumbnail.Image, thumbnailKey, fileName);
+            // var thumbnail = _imageResizer.GetThumbnail(new ImageInfo(image, fileName), THUMBNAIL_SIZE);
+
+            // string thumbnailKey = key + THUMBNAIL_SUFFIX;
+            // status = await SaveImageToS3Bucket(thumbnail.Image, thumbnailKey, fileName);
             
-            if(status != HttpStatusCode.OK)
-            {
-                // Delete original image.
-                DeleteImage(key);
+            // if(status != HttpStatusCode.OK)
+            // {
+            //     // Delete original image.
+            //     DeleteImage(key);
 
-                return null;
-            }
+            //     return null;
+            // }
                         
             return key;
         }
@@ -93,6 +95,27 @@ namespace Genealogix.Records.Api.Services
             };
 
             var response = _client.DeleteObjectsAsync(request);
+        }
+
+        public async Task<Tuple<byte[], string>> GetImage(string key)
+        {
+            GetObjectRequest request = new GetObjectRequest{
+                BucketName = BUCKET_NAME,
+                Key = key                
+            };
+            using(var response = await _client.GetObjectAsync(request))
+            {
+                using(var stream = response.ResponseStream) 
+                {
+                    BinaryReader r = new BinaryReader(stream);
+                    
+                    string fileName = response.Metadata["x-amz-meta-title"]; // Assume you have "title" as medata added to the object.
+                    string contentType = response.Headers["Content-Type"];
+                    return new Tuple<byte[], string>(r.ReadBytes((int)stream.Length), contentType);                
+                }           
+            }
+
+             
         }
     }
 }

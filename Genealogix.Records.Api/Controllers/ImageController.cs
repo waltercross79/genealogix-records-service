@@ -19,7 +19,7 @@ namespace Genealogix.Records.Api.Controllers
             _imageService = imageService;    
         }
         
-        // GET api/images/5
+        // GET api/image/5
 
         /// <summary>
         /// Gets image with given id from the image data store.
@@ -27,12 +27,15 @@ namespace Genealogix.Records.Api.Controllers
         /// <param name="id">Unique identifier of the image.</param>
         /// <returns>Binary content of the image.</returns>
         [HttpGet("{id}")]
-        public ActionResult<byte[]> Get(string id)
+        public async Task<ActionResult> Get(string id)
         {
-            throw new NotImplementedException();
+            var image = await _imageService.GetImage(id);
+            this.Response.ContentType = image.Item2;
+
+            return new JsonResult(new {value = System.Convert.ToBase64String(image.Item1)});
         }
 
-        // POST api/images
+        // POST api/image
 
         /// <summary>
         /// Saves image in the image store and generates unique identifier.
@@ -40,14 +43,17 @@ namespace Genealogix.Records.Api.Controllers
         /// <param name="image">Binary representation of the image.</param>
         /// <param name="fileName">Original file name.</param>
         [HttpPost]
-        public async Task<ActionResult<string>> Post([FromForm] string imageBase64, [FromForm] string fileName)
+        [RequestFormLimits(ValueLengthLimit=Int32.MaxValue)]
+        public async Task<ActionResult> Post([FromForm] string imageBase64, [FromForm] string fileName)
         {
             byte[] image = System.Convert.FromBase64String(imageBase64);
 
-            return await _imageService.SaveImage(fileName, image);
+            string key = await _imageService.SaveImage(fileName, image);
+
+            return new JsonResult(new { value = key });
         }
 
-        // DELETE api/images/5
+        // DELETE api/image/5
 
         /// <summary>
         /// Deletes image from the image store.
@@ -58,7 +64,7 @@ namespace Genealogix.Records.Api.Controllers
         {
         }
 
-        // GET api/images/thumbnails?id=abcd&id=efgh
+        // GET api/image/thumbnails?id=abcd&id=efgh
 
         /// <summary>
         /// Loads thumbnails for all provided identifiers.

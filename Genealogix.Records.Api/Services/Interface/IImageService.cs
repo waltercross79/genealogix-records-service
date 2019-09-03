@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Genealogix.Records.Api.Services 
@@ -19,5 +20,12 @@ namespace Genealogix.Records.Api.Services
         /// </summary>
         /// <param name="key">Unique identifier of the image to remove.</param>
         void DeleteImage(string key);
+
+        /// <summary>
+        /// Loads image from the image store and returns the binary content of the image.
+        /// </summary>
+        /// <param name="key">Unique identifier of the image to load.</param>
+        /// <returns>Byte array with the image data.</returns>
+        Task<Tuple<byte[], string>> GetImage(string key);
     }
 }

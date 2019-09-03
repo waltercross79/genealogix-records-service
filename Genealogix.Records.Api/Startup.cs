@@ -12,6 +12,8 @@ namespace Genealogix.Records.Api
 {
     public class Startup
     {
+        private const string CorsPolicyName = "_GenealogyCorsPolicy";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -22,6 +24,9 @@ namespace Genealogix.Records.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Setup CORS policies.
+            services.AddCors();
+
             // MongoDB setup.
             services.Configure<RecordsDatabaseSettings>(
                 Configuration.GetSection(nameof(RecordsDatabaseSettings)));            
@@ -31,6 +36,7 @@ namespace Genealogix.Records.Api
             services.AddSingleton<IRecordService, RecordService>();
 
             // Amazon S3 setup.
+            services.AddTransient<ImageResizer>();
             services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
             services.AddAWSService<IAmazonS3>();
             services.AddSingleton<IImageService, S3ImageService>();
@@ -51,6 +57,8 @@ namespace Genealogix.Records.Api
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseCors(b => b.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
             app.UseHttpsRedirection();
             app.UseMvc();

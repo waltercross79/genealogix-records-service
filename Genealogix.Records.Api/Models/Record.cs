@@ -23,6 +23,7 @@ namespace Genealogix.Records.Api.Models
         [JsonProperty("id")]
         public string ID { get; set; }
 
+        private DateTime _recordDate;
         /// <summary>
         /// Date when the record was made in the registry.
         /// </summary>
@@ -30,7 +31,17 @@ namespace Genealogix.Records.Api.Models
         [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Unspecified)]
         [Required]
         [JsonProperty("recordDate")]
-        public DateTime RecordDate { get; set; }
+        public DateTime RecordDate { 
+            get
+            {
+                return _recordDate;
+            } 
+            set
+            {
+                // Get rid of the time part.
+                _recordDate = DateTime.Parse(value.ToShortDateString());
+            } 
+        }
 
         /// <summary>
         /// Type of record - birth|death|marriage.
