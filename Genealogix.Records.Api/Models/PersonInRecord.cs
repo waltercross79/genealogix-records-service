@@ -36,11 +36,29 @@ namespace Genealogix.Records.Api.Models
         [Required]
         public PersonRole Role { get; set; }
 
+        private DateTime? _dob;
         /// <summary>
         /// Date of birth of the person in record, if known.
         /// </summary>
         /// <value></value>
         [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Unspecified)]
-        public DateTime? DOB { get; set; }        
+        public DateTime? DOB 
+        { 
+            get
+            {
+                return _dob;
+            }
+            set
+            {
+                if(value == null)
+                {
+                    _dob = null;
+                }
+                else 
+                {
+                    _dob = value.Value.Date;
+                }
+            }
+        }       
     }
 }

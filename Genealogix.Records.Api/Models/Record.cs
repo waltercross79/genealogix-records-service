@@ -39,7 +39,7 @@ namespace Genealogix.Records.Api.Models
             set
             {
                 // Get rid of the time part.
-                _recordDate = DateTime.Parse(value.ToShortDateString());
+                _recordDate = value.Date;
             } 
         }
 
